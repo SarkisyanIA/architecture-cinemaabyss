@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   # PostgreSQL Database
@@ -94,8 +94,28 @@ services:
     ports:
       - "8082:8082"
     environment:
-      PORT: 8082
+      SERVER_PORT: 8082
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_BROKERS: kafka:9092
+      SPRING_KAFKA_CONSUMER_GROUP_ID: events-group
+      SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: earliest
+      SPRING_KAFKA_CONSUMER_ENABLE_AUTO_COMMIT: "true"
+      SPRING_KAFKA_CONSUMER_AUTO_COMMIT_INTERVAL_MS: "1000"
+      SPRING_KAFKA_CONSUMER_MAX_POLL_RECORDS: "500"
+      SPRING_KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS: "300000"
+      KAFKA_TOPICS_MOVIE_EVENTS: movie-events
+      KAFKA_TOPICS_USER_EVENTS: user-events
+      KAFKA_TOPICS_PAYMENT_EVENTS: payment-events
+      # Десериализация (важно для работы Consumer!)
+      SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: org.springframework.kafka.support.serializer.JsonDeserializer
+      SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
+
+      # Дополнительные свойства для десериализации
+      SPRING_KAFKA_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "com.cinemaabyss.events.dto"
+      SPRING_KAFKA_PROPERTIES_SPRING_JSON_TYPE_MAPPING: >
+        movieEvent:com.cinemaabyss.events.dto.MovieEvent,
+        userEvent:com.cinemaabyss.events.dto.UserEvent,
+        paymentEvent:com.cinemaabyss.events.dto.PaymentEvent
     networks:
       - cinemaabyss-network
 
@@ -108,14 +128,15 @@ services:
     depends_on:
       - monolith
       - movies-service
-      - events-service
+#      - events-service
     ports:
-      - "8000:8000"
+      - "8008:8000"
     environment:
-      PORT: 8000
+#      PORT: 8000
+      SERVER_PORT: 8000
       MONOLITH_URL: http://monolith:8080
       MOVIES_SERVICE_URL: http://movies-service:8081
-      EVENTS_SERVICE_URL: http://events-service:8082
+#      EVENTS_SERVICE_URL: http://events-service:8082
       GRADUAL_MIGRATION: "true"
       MOVIES_MIGRATION_PERCENT: "50"
     networks:
