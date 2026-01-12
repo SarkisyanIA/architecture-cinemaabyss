@@ -19,7 +19,7 @@ public class AppConfig {
     @Value("${movies.service.url}")
     private String moviesServiceUrl;
 
-    @Value("${movies.service.url}")
+    @Value("${events.service.url}")
     private String eventsServiceUrl;
 
     public String getMonolithUrl() {

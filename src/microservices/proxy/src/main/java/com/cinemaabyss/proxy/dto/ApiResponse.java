@@ -8,12 +8,17 @@ public class ApiResponse {
     private Object data;
     private String message;
     private String error;
+    private String status;
 
-    public ApiResponse(boolean success, Object data, String message, String error) {
+    public ApiResponse(boolean success, Object data, String message, String error, String status) {
         this.success = success;
         this.data = data;
         this.message = message;
         this.error = error;
+        this.status = status;
+    }
+
+    public ApiResponse() {
     }
 
     // Getters and setters
@@ -28,4 +33,7 @@ public class ApiResponse {
 
     public String getError() { return error; }
     public void setError(String error) { this.error = error; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

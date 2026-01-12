@@ -10,9 +10,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
 public class ProxyServiceImpl implements ProxyService {
 
@@ -62,7 +59,7 @@ public class ProxyServiceImpl implements ProxyService {
             return ResponseEntity
                     .status(response.getStatusCode())
                     .body(new ApiResponse(true, response.getBody(),
-                            "Success from " + serviceName, null));
+                            "Success from " + serviceName, null,"success"));
         } catch (Exception e) {
             // Fallback к монолиту в случае ошибки
             if (useNewService) {
@@ -88,12 +85,12 @@ public class ProxyServiceImpl implements ProxyService {
             return ResponseEntity
                     .status(response.getStatusCode())
                     .body(new ApiResponse(true, response.getBody(),
-                            "Success from monolith", null));
+                            "Success from monolith", null, "success"));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             return ResponseEntity
                     .status(e.getStatusCode())
                     .body(new ApiResponse(false, null,
-                            "Error from monolith", e.getResponseBodyAsString()));
+                            "Error from monolith", e.getResponseBodyAsString(), "error"));
         }
     }
 

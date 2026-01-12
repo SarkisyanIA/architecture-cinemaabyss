@@ -23,14 +23,13 @@ public class ProxyController {
     @RequestMapping(value = "/**", method = {RequestMethod.GET, RequestMethod.POST,
             RequestMethod.PUT, RequestMethod.DELETE,
             RequestMethod.PATCH})
-    public ResponseEntity<ApiResponse> proxyAllRequests(
+    public ResponseEntity<?> proxyAllRequests(
             HttpServletRequest request,
             @RequestBody(required = false) String requestBody) {
 
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        // Собираем заголовки в строку (упрощенный вариант)
         Map<String, String> headersMap = new HashMap<>();
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
@@ -40,7 +39,20 @@ public class ProxyController {
 
         String headers = headersMap.toString();
 
-        return proxyService.proxyRequest(path, method, requestBody, headers);
+        ResponseEntity<ApiResponse> apiResponse = proxyService.proxyRequest(path, method, requestBody, headers);
+
+        ApiResponse responseBody = apiResponse.getBody();
+        if (responseBody != null && responseBody.getData() != null) {
+            return ResponseEntity
+                    .status(200)
+                    .headers(apiResponse.getHeaders())
+                    .body(responseBody.getData());
+        } else {
+            return ResponseEntity
+                    .status(200)
+                    .headers(apiResponse.getHeaders())
+                    .body(responseBody);
+        }
     }
 
     // Отдельные эндпоинты для управления фиче-флагами (опционально)
@@ -49,6 +61,6 @@ public class ProxyController {
         // Здесь можно вернуть текущее состояние фиче-флагов
         Map<String, Object> data = new HashMap<>();
         data.put("message", "Feature flags status endpoint");
-        return ResponseEntity.ok(new ApiResponse(true, data, "Success", null));
+        return ResponseEntity.ok(new ApiResponse(true, data, "Success", null, "success"));
     }
 }

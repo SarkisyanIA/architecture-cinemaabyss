@@ -12,6 +12,6 @@ public class HealthController {
 
     @GetMapping("/health")
     public ResponseEntity<ApiResponse> getFeatureFlags() {
-        return ResponseEntity.ok(new ApiResponse(true, "API working", "Success", null));
+        return ResponseEntity.ok(new ApiResponse(true, "API working", "Success", null, "success"));
     }
 }

@@ -18,6 +18,7 @@ public class UserEvent {
     private String userId;
     private String username;
     private String action;
+    private String status;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)

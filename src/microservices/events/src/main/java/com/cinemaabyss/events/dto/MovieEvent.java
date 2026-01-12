@@ -15,6 +15,6 @@ public class MovieEvent {
     private String action;
     @JsonProperty("user_id")
     private String userId;
-
+    private String status;
 }
 
