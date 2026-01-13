@@ -24,8 +24,71 @@ spec:
         app: events-service
     spec:
       containers:
-      - name: events-service
-       .... тут
+        - name: events-service
+          image: {{ .Values.eventsService.image.repository }}:{{ .Values.eventsService.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.eventsService.image.pullPolicy | default "Always" }}
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SERVER_PORT
+              value: "8082"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+            - name: KAFKA_BROKERS
+              value: "kafka:9092"
+            - name: SPRING_KAFKA_CONSUMER_GROUP_ID
+              value: "events-group"
+            - name: SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET
+              value: "earliest"
+            - name: SPRING_KAFKA_CONSUMER_ENABLE_AUTO_COMMIT
+              value: "true"
+            - name: SPRING_KAFKA_CONSUMER_AUTO_COMMIT_INTERVAL_MS
+              value: "1000"
+            - name: SPRING_KAFKA_CONSUMER_MAX_POLL_RECORDS
+              value: "500"
+            - name: SPRING_KAFKA_CONSUMER_MAX_POLL_INTERVAL_MS
+              value: "300000"
+            - name: KAFKA_TOPICS_MOVIE_EVENTS
+              value: "movie-events"
+            - name: KAFKA_TOPICS_USER_EVENTS
+              value: "user-events"
+            - name: KAFKA_TOPICS_PAYMENT_EVENTS
+              value: "payment-events"
+            - name: SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER
+              value: "org.springframework.kafka.support.serializer.JsonDeserializer"
+            - name: SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER
+              value: "org.springframework.kafka.support.serializer.JsonSerializer"
+            - name: SPRING_KAFKA_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES
+              value: "com.cinemaabyss.events.dto"
+            - name: SPRING_KAFKA_PROPERTIES_SPRING_JSON_TYPE_MAPPING
+              value: "movieEvent:com.cinemaabyss.events.dto.MovieEvent,userEvent:com.cinemaabyss.events.dto.UserEvent,paymentEvent:com.cinemaabyss.events.dto.PaymentEvent"
+          envFrom:
+            - configMapRef:
+                name: cinemaabyss-config
+            - secretRef:
+                name: cinemaabyss-secrets
+          resources:
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          readinessProbe:
+            httpGet:
+              path: /api/events/health
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/events/health
+              port: 8082
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerconfigjson
 ---
 apiVersion: v1
 kind: Service
@@ -37,5 +100,10 @@ metadata:
     app.kubernetes.io/name: {{ include "cinemaabyss.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
- ........ и тут
+  selector:
+    app: events-service
+  ports:
+    - port: 8082
+      targetPort: 8082
+  type: ClusterIP
 {{- end }}

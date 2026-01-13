@@ -1,0 +1,50 @@
+ @startuml
+title CinemaAbyss Container Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User", "A user of the cinema system")
+Person(admin, "Administrator", "An administrator managing the system")
+System(CinemaAbyssSystem, "CinemaAbyss System", "System managing movies, subscription and discount")
+
+Container_Boundary(CinemaAbyssSystem, "CinemaAbyss System") {
+  Container(APIGateway, "API Gateway (Proxy Service)", "Java, SpringBoot", "Single entry point")
+  Container(UserService, "User Service", "Java, Spring", "Allows users to manage their membership")
+  Container(MoviesService, "Movies Service", "Java, Spring", "Allows you to manage movies")
+  Container(DiscountService, "Discount Service", "Java, Spring", "Allows you to manage discounts")
+  Container(SubscriptionService, "Subscription Service", "Java, Spring", "Allows you to manage subscriptions")
+  Container(EventsService, "Events Service", "Java, Spring, Kafka", "Kafka testing service")
+  Container(UserDatabase, "UserDatabase", "PostgreSQL", "Stores user data")
+  Container(MoviesDatabase, "MoviesDatabase", "PostgreSQL", "Stores movies data")
+  Container(DiscountDatabase, "DiscountDatabase", "PostgreSQL", "Stores discount data")
+  Container(SubscriptionDatabase, "SubscriptionDatabase", "PostgreSQL", "Stores subscription data")
+}
+
+System_Ext(payment, "Payment Service", "External service for processing payments")
+System_Ext(recommendation, "Recommendation System", "External system for recommending movies")
+System_Ext(cinemas, "Online Cinemas", "External system for sharing movies")
+System_Ext(partner, "Partner service", "External partner service for loyalty programs, etc")
+
+Rel(user, APIGateway, "Uses the system")
+Rel(admin, APIGateway,"Manages the system")
+Rel(APIGateway,UserService,"Processes user requests", HTTP/REST)
+Rel(APIGateway,MoviesService,"Processes movie requests", HTTP/REST)
+Rel(APIGateway,DiscountService,"Processes discount requests", HTTP/REST)
+Rel(APIGateway,SubscriptionService,"Processes subscription requests", HTTP/REST)
+Rel(APIGateway,EventsService,"Processes event requests", HTTP/REST)
+Rel(UserService,UserDatabase,"Reads/Writes user data", SQL/TCP)
+Rel(MoviesService,MoviesDatabase,"Reads/Writes movies data", SQL/TCP)
+Rel(DiscountService,DiscountDatabase,"Reads/Writes discount data", SQL/TCP)
+Rel(SubscriptionService,SubscriptionDatabase,"Reads/Writes subscription data", SQL/TCP)
+
+Rel(DiscountService,UserService,"Processes for personal discount", HTTP/REST)
+Rel(SubscriptionService,DiscountService,"Processes for billing with discount", HTTP/REST)
+Rel(SubscriptionService,UserService,"Processes for access by subscription", HTTP/REST)
+
+Rel(DiscountService,partner,"Fetches personal terms and conditions", HTTP/REST)
+Rel(MoviesService,recommendation,"Fetches recommendations", RabbitMQ)
+Rel(MoviesService,cinemas,"Fetches movies", UDP)
+Rel(SubscriptionService,payment,"Processes for payment", HTTP/REST)
+@enduml
